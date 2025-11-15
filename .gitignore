@@ -1,0 +1,14 @@
+*.pyc
+__pycache__
+*.log
+models/saved_models/*
+data/synthetic/*.json
+data/synthetic/*_sample.csv
+synthetic_data/*.json
+venv/
+.env
+.DS_Store
+.vscode/
+.idea/
+*.egg-info
+
