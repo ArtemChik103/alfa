@@ -1,5 +1,11 @@
 # Альфа-Аналитика для Бизнеса
 
+
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://xfyypucheqe9o52bzzmtsd.streamlit.app/)
+
+**🚀 Live Streamlit Cloud Application:** [https://xfyypucheqe9o52bzzmtsd.streamlit.app/](https://xfyypucheqe9o52bzzmtsd.streamlit.app/)
+
+
 **Альфа-Аналитика** — это B2B-платформа, предоставляющая продвинутые аналитические инструменты для бизнеса. Проект является MVP (Minimum Viable Product) и демонстрирует, как экспертиза Альфа-Банка в области данных и машинного обучения может быть монетизирована для помощи корпоративным клиентам в принятии ключевых решений.
 
 Платформа включает в себя три основных модуля:
