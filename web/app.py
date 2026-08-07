@@ -26,7 +26,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Uncached services to ensure real-time dynamic curve updates
 location_analyzer = LocationAnalyzer()
 demand_forecaster = DemandForecaster()
 client_segmenter = ClientSegmenter()
@@ -133,17 +132,16 @@ with tab_demand:
         horizon = st.slider("Горизонт прогноза (месяцев):", 3, 12, 12)
         
         category_hints = {
-            "electronics": "⚡ Пик: Черная пятница (Ноябрь) и Новый год (Декабрь) + Август (Учеба). Провал: Январь.",
-            "pharmacy": "💊 Пик: Зимний Грипп/ОРВИ (Январь-Февраль 1.7x!) и Октябрь. Глубокий провал летом (Июль 0.6x).",
+            "electronics": "⚡ Пик: Черная пятница (Ноябрь 1.6x) и Декабрь (1.8x) + Август. Провал: Январь (0.7x).",
+            "pharmacy": "💊 Пик: Зимний Грипп/ОРВИ (Январь-Февраль 1.7x!). Глубокий провал летом (Июль 0.6x).",
             "beauty": "💄 Пик: 8 Марта (Максимум 1.9x!), 23 Февраля и Новый Год.",
-            "clothing": "👗 Двойной сезонный пик: Весна (Апрель-Май) и Осень (Сентябрь-Октябрь).",
-            "groceries": "🛒 Стабильный спрос с сильным новогодним праздничным пиком (Декабрь) и майскими праздниками.",
-            "household": "🏡 Пик: Сезон дач и ремонтов (Май-Июнь)."
+            "clothing": "👗 Двойной сезонный пик: Весна (Апрель-Май 1.5x) и Осень (Октябрь 1.45x).",
+            "groceries": "🛒 Стабильный спрос с сильным новогодним пиком (Декабрь 1.65x) и майскими праздниками.",
+            "household": "🏡 Пик: Сезон дач и ремонтов (Май 1.55x, Июнь 1.45x)."
         }
         st.info(category_hints.get(cat, ""))
         
     with col_d2:
-        # Create fresh forecaster instance
         forecaster_instance = DemandForecaster()
         forecast_res = forecaster_instance.forecast(category=cat, region=reg, months_ahead=horizon)
         df_chart = pd.DataFrame(forecast_res["monthly_forecasts"])
@@ -190,7 +188,9 @@ with tab_demand:
             yaxis=dict(title="Объем спроса (ед.)", rangemode="tozero"),
             xaxis_title="Месяц"
         )
-        st.plotly_chart(fig, use_container_width=True)
+        
+        # Explicit unique key forces Streamlit to rebuild Plotly DOM node on dropdown change
+        st.plotly_chart(fig, use_container_width=True, key=f"plotly_chart_{cat}_{reg}_{horizon}")
 
 # ================= TAB 3: CLIENT SEGMENTATION (DADATA INN) =================
 with tab_segment:
