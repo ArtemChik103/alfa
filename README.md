@@ -27,7 +27,7 @@
 - **Входные данные**: Давность последней покупки (Recency), частота покупок (Frequency), средний оборот (Monetary), размер компании.
 - **Результат**: Название сегмента, его описание и рекомендации по работе с клиентом.
 
-## ️ Технологический стек
+## Технологический стек
 
 - **Бэкенд (API)**: FastAPI, Uvicorn
 - **Фронтенд (Web)**: Streamlit, Plotly, Folium
@@ -41,35 +41,35 @@
 alfa/
 │
 ├── api/
-│   └── main.py             # FastAPI приложение для API
+│ └── main.py # FastAPI приложение для API
 │
 ├── data/
-│   └── generate.py         # Скрипт для генерации синтетических данных
+│ └── generate.py # Скрипт для генерации синтетических данных
 │
 ├── models/
-│   ├── client_segmenter.py   # Модель сегментации клиентов
-│   ├── demand_forecaster.py  # Модель прогнозирования спроса
-│   ├── location_analyzer.py  # Модель анализа локаций
-│   └── saved_models/       # Директория для сохранения обученных моделей
+│ ├── client_segmenter.py # Модель сегментации клиентов
+│ ├── demand_forecaster.py # Модель прогнозирования спроса
+│ ├── location_analyzer.py # Модель анализа локаций
+│ └── saved_models/ # Директория для сохранения обученных моделей
 │
 ├── reports/
-│   └── sample_predictions.json # Примеры предсказаний
+│ └── sample_predictions.json # Примеры предсказаний
 │
 ├── synthetic_data/
-│   └── *.csv               # Сгенерированные данные
+│ └── *.csv # Сгенерированные данные
 │
 ├── utils/
-│   └── data_preprocessing.py # Функции предобработки данных
+│ └── data_preprocessing.py # Функции предобработки данных
 │
 ├── web/
-│   └── app.py              # Streamlit веб-приложение
+│ └── app.py # Streamlit веб-приложение
 │
-├── train_models.py         # Скрипт для обучения всех моделей
-├── requirements.txt        # Список зависимостей Python
-└── README.md               # Этот файл
+├── train_models.py # Скрипт для обучения всех моделей
+├── requirements.txt # Список зависимостей Python
+└── README.md # Этот файл
 ```
 
-## ️ Установка
+## Установка
 
 1. **Клонируйте репозиторий:**
 ```bash
@@ -80,8 +80,8 @@ alfa/
 2. **Создайте и активируйте виртуальное окружение:**
 ```bash
     python -m venv venv
-    source venv/bin/activate  # Для Linux/macOS
-    venv\Scripts\activate     # Для Windows
+    source venv/bin/activate # Для Linux/macOS
+    venv\Scripts\activate # Для Windows
     ```
 
 3. **Установите зависимости:**
