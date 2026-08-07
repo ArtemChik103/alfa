@@ -26,17 +26,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-@st.cache_resource
-def load_services():
-    loc = LocationAnalyzer()
-    dem = DemandForecaster()
-    seg = ClientSegmenter()
-    dad = DaDataClient()
-    osm = OverpassPOIProvider()
-    mac = MacroDataProvider()
-    return loc, dem, seg, dad, osm, mac
-
-location_analyzer, demand_forecaster, client_segmenter, dadata_client, overpass_provider, macro_provider = load_services()
+# Uncached services to ensure real-time dynamic curve updates
+location_analyzer = LocationAnalyzer()
+demand_forecaster = DemandForecaster()
+client_segmenter = ClientSegmenter()
+dadata_client = DaDataClient()
+overpass_provider = OverpassPOIProvider()
+macro_provider = MacroDataProvider()
 
 st.markdown("""
 <style>
@@ -132,32 +128,33 @@ with tab_demand:
     
     col_d1, col_d2 = st.columns([1, 2.2])
     with col_d1:
-        cat = st.selectbox("Категория товаров (Уникальный профиль):", ["electronics", "beauty", "clothing", "pharmacy", "groceries", "household"])
+        cat = st.selectbox("Категория товаров (Уникальный профиль):", ["electronics", "pharmacy", "beauty", "clothing", "groceries", "household"])
         reg = st.selectbox("Регион (Уникальный тренд):", ["Москва", "Санкт-Петербург", "Свердловская обл.", "Амурская обл."])
-        horizon = st.slider("Горизонт прогноза (месяцев):", 3, 12, 6)
+        horizon = st.slider("Горизонт прогноза (месяцев):", 3, 12, 12)
         
         category_hints = {
-            "electronics": "⚡ Пик: Черная пятница (Ноябрь) и Новый год (Декабрь) + Вспучивание перед учебой (Август). Высокая чувствительность к USD/RUB.",
-            "beauty": "💄 Пик: 8 Марта (максимальный спайк x1.7), 23 Февраля и Новогодние подарки.",
-            "clothing": "👗 Двойной сезонный пик: Весенняя коллекция (Апрель-Май) и Осенне-зимняя (Октябрь-Ноябрь).",
-            "pharmacy": "💊 Пик: ОРВИ/Грипп сезон (Январь-Февраль и Октябрь-Ноябрь), Летний минимум.",
-            "groceries": "🛒 Высокий стабильный базовый объем, новогодний пик (Декабрь) и майские шашлыки.",
-            "household": "🏡 Пик: Сезон ремонтов (Май-Июнь) и подготовка дома к осени (Сентябрь)."
+            "electronics": "⚡ Пик: Черная пятница (Ноябрь) и Новый год (Декабрь) + Август (Учеба). Провал: Январь.",
+            "pharmacy": "💊 Пик: Зимний Грипп/ОРВИ (Январь-Февраль 1.7x!) и Октябрь. Глубокий провал летом (Июль 0.6x).",
+            "beauty": "💄 Пик: 8 Марта (Максимум 1.9x!), 23 Февраля и Новый Год.",
+            "clothing": "👗 Двойной сезонный пик: Весна (Апрель-Май) и Осень (Сентябрь-Октябрь).",
+            "groceries": "🛒 Стабильный спрос с сильным новогодним праздничным пиком (Декабрь) и майскими праздниками.",
+            "household": "🏡 Пик: Сезон дач и ремонтов (Май-Июнь)."
         }
         st.info(category_hints.get(cat, ""))
         
     with col_d2:
-        forecast_res = demand_forecaster.forecast(category=cat, region=reg, months_ahead=horizon)
+        # Create fresh forecaster instance
+        forecaster_instance = DemandForecaster()
+        forecast_res = forecaster_instance.forecast(category=cat, region=reg, months_ahead=horizon)
         df_chart = pd.DataFrame(forecast_res["monthly_forecasts"])
         
-        # Palette per category for distinct visual feedback
         cat_colors = {
-            "electronics": "#00E6FF", # Neon Cyan
-            "beauty": "#FF2A6D",      # Neon Pink/Rose
-            "clothing": "#A855F7",    # Purple/Violet
-            "pharmacy": "#10B981",    # Emerald Green
-            "groceries": "#F59E0B",   # Amber/Gold
-            "household": "#F97316"    # Orange
+            "electronics": "#00E6FF",
+            "pharmacy": "#10B981",
+            "beauty": "#FF2A6D",
+            "clothing": "#A855F7",
+            "groceries": "#F59E0B",
+            "household": "#F97316"
         }
         theme_color = cat_colors.get(cat, "#3B82F6")
         
@@ -176,21 +173,21 @@ with tab_demand:
             y=df_chart["upper_bound"], 
             mode='lines', 
             name='Верхняя граница (95%)', 
-            line=dict(dash='dash', color='rgba(255,255,255,0.4)')
+            line=dict(dash='dash', color='rgba(255,255,255,0.3)')
         ))
         fig.add_trace(go.Scatter(
             x=df_chart["month"], 
             y=df_chart["lower_bound"], 
             mode='lines', 
             name='Нижняя граница (95%)', 
-            line=dict(dash='dash', color='rgba(255,255,255,0.2)')
+            line=dict(dash='dash', color='rgba(255,255,255,0.15)')
         ))
         
         fig.update_layout(
             title=f"Профиль спроса: {cat.upper()} в {reg} | MAPE: {forecast_res['accuracy_mape_percent']}",
             template="plotly_dark", 
-            height=380,
-            yaxis_title="Объем спроса (ед.)",
+            height=400,
+            yaxis=dict(title="Объем спроса (ед.)", rangemode="tozero"),
             xaxis_title="Месяц"
         )
         st.plotly_chart(fig, use_container_width=True)
