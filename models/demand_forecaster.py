@@ -8,38 +8,44 @@ import joblib
 from utils.macro_provider import MacroDataProvider
 
 class DemandForecaster:
-    """High-accuracy Hybrid Demand Forecasting model with distinct category seasonality profiles."""
+    """Hybrid Demand Forecasting model with 100% visually distinct category profiles."""
     
     def __init__(self):
         self.model = None
         self.macro_provider = MacroDataProvider()
         self.feature_names = None
         
-        # Highly distinctive month-by-month seasonality multipliers (1..12)
+        # 6 Radically Different Visual Shapes per category (Months 1..12)
         self.category_seasonality = {
+            # Electronics: Flat low baseline all year + Massive Cliff Tower in Nov-Dec (Black Friday & Xmas)
             'electronics': {
-                1: 0.70, 2: 0.80, 3: 0.90, 4: 0.85, 5: 0.80, 6: 0.85, 
-                7: 0.75, 8: 1.35, 9: 1.10, 10: 1.00, 11: 1.60, 12: 1.80
+                1: 0.60, 2: 0.65, 3: 0.70, 4: 0.65, 5: 0.60, 6: 0.65, 
+                7: 0.55, 8: 1.20, 9: 0.85, 10: 0.75, 11: 2.20, 12: 2.70
             },
+            # Pharmacy: High Winter Mountain (Jan-Feb-Dec) -> Deep Summer Canyon (June-July-Aug)
             'pharmacy': {
-                1: 1.70, 2: 1.65, 3: 1.30, 4: 0.95, 5: 0.80, 6: 0.65,
-                7: 0.60, 8: 0.65, 9: 1.10, 10: 1.45, 11: 1.50, 12: 1.20
+                1: 2.40, 2: 2.30, 3: 1.60, 4: 1.00, 5: 0.65, 6: 0.35,
+                7: 0.25, 8: 0.35, 9: 0.90, 10: 1.40, 11: 1.60, 12: 1.90
             },
+            # Beauty: Huge Single Needle Spike in March (March 8!) + Feb/Dec gift spikes
             'beauty': {
-                1: 0.75, 2: 1.40, 3: 1.90, 4: 0.90, 5: 0.95, 6: 0.85,
-                7: 0.80, 8: 0.90, 9: 1.00, 10: 0.95, 11: 1.10, 12: 1.70
+                1: 0.50, 2: 1.70, 3: 3.10, 4: 0.60, 5: 0.65, 6: 0.55,
+                7: 0.50, 8: 0.60, 9: 0.70, 10: 0.60, 11: 0.90, 12: 2.10
             },
+            # Clothing: Twin-Camel Humps (Spring peak April-May & Autumn peak Sept-Oct)
             'clothing': {
-                1: 0.70, 2: 0.80, 3: 1.20, 4: 1.50, 5: 1.30, 6: 0.90,
-                7: 0.80, 8: 1.15, 9: 1.40, 10: 1.45, 11: 1.20, 12: 1.30
+                1: 0.40, 2: 0.50, 3: 1.10, 4: 2.10, 5: 1.90, 6: 0.80,
+                7: 0.50, 8: 1.10, 9: 1.95, 10: 2.15, 11: 0.90, 12: 1.30
             },
+            # Groceries: Flat High Steady Line (1.0) + Dec 1-month Feast Explosion (2.8x)
             'groceries': {
-                1: 1.10, 2: 0.95, 3: 1.00, 4: 1.00, 5: 1.35, 6: 1.05,
-                7: 0.95, 8: 1.00, 9: 0.98, 10: 0.95, 11: 1.05, 12: 1.65
+                1: 1.05, 2: 0.95, 3: 1.00, 4: 0.98, 5: 1.25, 6: 1.00,
+                7: 0.95, 8: 1.00, 9: 0.98, 10: 0.95, 11: 1.10, 12: 2.85
             },
+            # Household: Summer Dome Hill (May-June-July Dacha/Renovation) + Winter Floor
             'household': {
-                1: 0.70, 2: 0.80, 3: 1.05, 4: 1.25, 5: 1.55, 6: 1.45,
-                7: 1.30, 8: 1.15, 9: 1.05, 10: 0.90, 11: 0.85, 12: 1.10
+                1: 0.35, 2: 0.40, 3: 0.80, 4: 1.40, 5: 2.30, 6: 2.50,
+                7: 2.10, 8: 1.50, 9: 1.00, 10: 0.60, 11: 0.45, 12: 0.55
             }
         }
         
@@ -50,8 +56,8 @@ class DemandForecaster:
             'амурская обл.': {'base_mult': 0.75, 'growth_trend': 0.010}
         }
 
-    def forecast(self, category: str, region: str, months_ahead: int = 6) -> dict:
-        """Generate category-unique & region-specific demand forecast timelines."""
+    def forecast(self, category: str, region: str, months_ahead: int = 12) -> dict:
+        """Generate 100% visually distinct category demand forecast curves."""
         cbr_rates = self.macro_provider.get_cbr_rates()
         usd_rub = cbr_rates["usd_rub"]
         
@@ -60,10 +66,10 @@ class DemandForecaster:
         
         base_volumes = {
             'electronics': 15000,
-            'clothing': 22000,
-            'groceries': 45000,
             'pharmacy': 18000,
             'beauty': 12000,
+            'clothing': 22000,
+            'groceries': 45000,
             'household': 16000
         }
         
