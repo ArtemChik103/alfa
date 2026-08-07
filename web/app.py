@@ -10,7 +10,6 @@ import json
 import os
 import sys
 
-# Ensure local imports work
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from models.location_analyzer import LocationAnalyzer
@@ -20,7 +19,6 @@ from utils.dadata_provider import DaDataClient
 from utils.overpass_provider import OverpassPOIProvider
 from utils.macro_provider import MacroDataProvider
 
-# Streamlit Page Config
 st.set_page_config(
     page_title="Альфа-Аналитика B2B | Real Data & AI Platform",
     page_icon="🏦",
@@ -28,7 +26,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize Models & Services
 @st.cache_resource
 def load_services():
     loc = LocationAnalyzer()
@@ -41,53 +38,19 @@ def load_services():
 
 location_analyzer, demand_forecaster, client_segmenter, dadata_client, overpass_provider, macro_provider = load_services()
 
-# Styling
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-    }
-
-    .main-header {
-        font-size: 2.3rem;
-        font-weight: 800;
-        color: #F9FAFB;
-        margin-bottom: 0.2rem;
-    }
-    .main-header span {
-        color: #EF4444;
-    }
-    .sub-header {
-        font-size: 1.05rem;
-        color: #9CA3AF;
-        margin-bottom: 1.5rem;
-    }
-    .metric-card {
-        background: rgba(31, 41, 55, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1rem 1.2rem;
-        text-align: center;
-    }
-    .metric-val {
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #3B82F6;
-    }
-    .metric-label {
-        font-size: 0.85rem;
-        color: #9CA3AF;
-    }
+    html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+    .main-header { font-size: 2.3rem; font-weight: 800; color: #F9FAFB; margin-bottom: 0.2rem; }
+    .main-header span { color: #EF4444; }
+    .sub-header { font-size: 1.05rem; color: #9CA3AF; margin-bottom: 1.5rem; }
 </style>
 """, unsafe_allow_html=True)
 
-# Header
 st.markdown("<div class='main-header'>🏦 <span>Альфа-Аналитика</span> B2B</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-header'>Платформа геоаналитики, прогнозирования спроса и B2B-сегментации с интеграцией <b>DaData API, OpenStreetMap POI и ЦБ РФ</b></div>", unsafe_allow_html=True)
 
-# Top CBR Macro Stats
 cbr_rates = macro_provider.get_cbr_rates()
 col_m1, col_m2, col_m3, col_m4 = st.columns(4)
 with col_m1:
@@ -101,7 +64,6 @@ with col_m4:
 
 st.divider()
 
-# Navigation Tabs
 tab_geo, tab_demand, tab_segment, tab_accuracy = st.tabs([
     "📍 1. Геоаналитика (OSM POI)", 
     "📈 2. Прогноз Спроса (ЦБ РФ)", 
@@ -112,7 +74,6 @@ tab_geo, tab_demand, tab_segment, tab_accuracy = st.tabs([
 # ================= TAB 1: GEO-ANALYTICS =================
 with tab_geo:
     st.subheader("📍 Геоаналитика & Оценка локаций (OpenStreetMap POI)")
-    
     col_geo_inputs, col_geo_map = st.columns([1, 1.3])
     
     with col_geo_inputs:
@@ -136,7 +97,6 @@ with tab_geo:
             
         avg_check = st.slider("Предполагаемый средний чек (руб.)", 300, 10000, 2500, step=100)
         radius = st.select_slider("Радиус охвата POI (метры)", options=[200, 500, 1000], value=500)
-        
         btn_calc_geo = st.button("🚀 Рассчитать потенциал точки (OSM POI)", type="primary")
         
     with col_geo_map:
@@ -157,7 +117,6 @@ with tab_geo:
             
         st.success("✅ Анализ потенциала точки завершен (R² = 0.884, Log1p Target Model)")
         res_col1, res_col2, res_col3, res_col4 = st.columns(4)
-        
         with res_col1:
             st.metric("Прогноз выручки в месяц", f"{analysis['predicted_monthly_revenue']:,.0f} ₽".replace(",", " "))
         with res_col2:
@@ -169,30 +128,78 @@ with tab_geo:
 
 # ================= TAB 2: DEMAND FORECASTING =================
 with tab_demand:
-    st.subheader("📈 Прогнозирование спроса с учетом ЦБ РФ и Праздников РФ")
+    st.subheader("📈 Уникальный Прогноз Спроса по Категориям & Регионам")
     
-    col_d1, col_d2 = st.columns([1, 2])
+    col_d1, col_d2 = st.columns([1, 2.2])
     with col_d1:
-        cat = st.selectbox("Категория товаров:", ["electronics", "clothing", "groceries", "pharmacy", "beauty", "household"])
-        reg = st.selectbox("Регион:", ["Москва", "Санкт-Петербург", "Свердловская обл.", "Амурская обл."])
+        cat = st.selectbox("Категория товаров (Уникальный профиль):", ["electronics", "beauty", "clothing", "pharmacy", "groceries", "household"])
+        reg = st.selectbox("Регион (Уникальный тренд):", ["Москва", "Санкт-Петербург", "Свердловская обл.", "Амурская обл."])
         horizon = st.slider("Горизонт прогноза (месяцев):", 3, 12, 6)
+        
+        category_hints = {
+            "electronics": "⚡ Пик: Черная пятница (Ноябрь) и Новый год (Декабрь) + Вспучивание перед учебой (Август). Высокая чувствительность к USD/RUB.",
+            "beauty": "💄 Пик: 8 Марта (максимальный спайк x1.7), 23 Февраля и Новогодние подарки.",
+            "clothing": "👗 Двойной сезонный пик: Весенняя коллекция (Апрель-Май) и Осенне-зимняя (Октябрь-Ноябрь).",
+            "pharmacy": "💊 Пик: ОРВИ/Грипп сезон (Январь-Февраль и Октябрь-Ноябрь), Летний минимум.",
+            "groceries": "🛒 Высокий стабильный базовый объем, новогодний пик (Декабрь) и майские шашлыки.",
+            "household": "🏡 Пик: Сезон ремонтов (Май-Июнь) и подготовка дома к осени (Сентябрь)."
+        }
+        st.info(category_hints.get(cat, ""))
         
     with col_d2:
         forecast_res = demand_forecaster.forecast(category=cat, region=reg, months_ahead=horizon)
         df_chart = pd.DataFrame(forecast_res["monthly_forecasts"])
         
+        # Palette per category for distinct visual feedback
+        cat_colors = {
+            "electronics": "#00E6FF", # Neon Cyan
+            "beauty": "#FF2A6D",      # Neon Pink/Rose
+            "clothing": "#A855F7",    # Purple/Violet
+            "pharmacy": "#10B981",    # Emerald Green
+            "groceries": "#F59E0B",   # Amber/Gold
+            "household": "#F97316"    # Orange
+        }
+        theme_color = cat_colors.get(cat, "#3B82F6")
+        
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df_chart["month"], y=df_chart["predicted_volume"], mode='lines+markers', name='Прогноз спроса', line=dict(color='#3B82F6', width=3)))
-        fig.add_trace(go.Scatter(x=df_chart["month"], y=df_chart["upper_bound"], mode='lines', name='Верхняя граница (95%)', line=dict(dash='dash', color='#10B981')))
-        fig.add_trace(go.Scatter(x=df_chart["month"], y=df_chart["lower_bound"], mode='lines', name='Нижняя граница (95%)', line=dict(dash='dash', color='#EF4444')))
-        fig.update_layout(title=f"Прогноз спроса на {cat.capitalize()} ({reg}) | Точность MAPE: {forecast_res['accuracy_mape_percent']}", template="plotly_dark", height=340)
+        fig.add_trace(go.Scatter(
+            x=df_chart["month"], 
+            y=df_chart["predicted_volume"], 
+            mode='lines+markers+text',
+            name=f'Спрос {cat.upper()}',
+            text=[f"{v:,.0f}" for v in df_chart["predicted_volume"]],
+            textposition="top center",
+            line=dict(color=theme_color, width=4)
+        ))
+        fig.add_trace(go.Scatter(
+            x=df_chart["month"], 
+            y=df_chart["upper_bound"], 
+            mode='lines', 
+            name='Верхняя граница (95%)', 
+            line=dict(dash='dash', color='rgba(255,255,255,0.4)')
+        ))
+        fig.add_trace(go.Scatter(
+            x=df_chart["month"], 
+            y=df_chart["lower_bound"], 
+            mode='lines', 
+            name='Нижняя граница (95%)', 
+            line=dict(dash='dash', color='rgba(255,255,255,0.2)')
+        ))
+        
+        fig.update_layout(
+            title=f"Профиль спроса: {cat.upper()} в {reg} | MAPE: {forecast_res['accuracy_mape_percent']}",
+            template="plotly_dark", 
+            height=380,
+            yaxis_title="Объем спроса (ед.)",
+            xaxis_title="Месяц"
+        )
         st.plotly_chart(fig, use_container_width=True)
 
 # ================= TAB 3: CLIENT SEGMENTATION (DADATA INN) =================
 with tab_segment:
     st.subheader("👥 B2B-Сегментация с мгновенным обогащением по ИНН (DaData API)")
     
-    inn_input = st.text_input("Введите ИНН организации (например: 7707083893 для Альфа-Банка или 7707083893 / 7705133757):", value="7707083893")
+    inn_input = st.text_input("Введите ИНН организации (например: 7707083893 для Альфа-Банка или 7705133757):", value="7707083893")
     btn_search_inn = st.button("🔍 Найти и сегментировать через DaData API", type="primary")
     
     if btn_search_inn or inn_input:
@@ -220,7 +227,6 @@ with tab_segment:
 # ================= TAB 4: MODEL ACCURACY METRICS =================
 with tab_accuracy:
     st.subheader("📊 Метрики точности и оценка моделей")
-    
     col_a1, col_a2, col_a3 = st.columns(3)
     
     with col_a1:
