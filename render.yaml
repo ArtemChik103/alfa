@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: alfa-analytics
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run web/app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: DADATA_API_KEY
+        value: 225939c9f990c2e2e9e7483e29a066e3ea06e8a9
